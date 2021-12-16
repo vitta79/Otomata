@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int bul(char *dizi,char x){
+	for(int i=0;i<sizeof(dizi);i++){
+		if(dizi[i]==x){
+			return i;
+		}
+	}
+}
+
+int uzunluk(char *dizi){
+	int uzunluk=0;
+	for(int i=0;i<sizeof(dizi);i++){
+		if(dizi[i]!=NULL){
+			uzunluk++;
+		}
+	}	
+	return uzunluk;
+}
+
+int main(){
+	FILE *inpt,*otpt,*trstn;
+	inpt=fopen("input.txt","r");
+	trstn=fopen("transition.txt","r");
+	
+	char durum[20];
+	char girdi[10];
+	char cikti[10];
+	int sayac=0, i=0;
+	char a='*';
+	while(!feof(inpt)){
+		a=fgetc(inpt);
+		if(a!='Q' && a!='=' && a!='{' && a!='}' && a!=',' && a!='E' && a!='G' && a!='\n' && a!='q'){
+				if(sayac==0){
+					durum[i]=a;
+					i++;
+				}else if(sayac==1){
+					girdi[i]=a;
+					i++;
+				}else if(sayac==2){
+					cikti[i]=a;
+					i++;
+				}
+		}else if(a=='\n'){
+			sayac++;
+			i=0;
+		}
+	}
+	
+	sayac=0;
+	i=-1;
+	int j=0;
+	char yapi[uzunluk(durum)][uzunluk(girdi)*2];
+//	fseek(trstn,uzunluk(girdi)*2+1,SEEK_SET);
+	while(!feof(trstn)){
+		a=fgetc(trstn);
+		if(a!='q' && a!='Q' && a!='	' && a!='\n'){
+			if(sayac>0){
+				yapi[i][j]=a;
+				j++;
+			}
+
+		}else if(a=='\n'){
+			sayac++;
+			i++; j=0;
+		}
+	}
+	
+	int k;
+	char giris[25], cikis[25];
+	printf("Giris Stringi: ");
+	scanf("%s",&giris);
+	int gez=0,old;
+	
+	for(i=0;giris[i]!=NULL;i++){
+		k=bul(girdi,giris[i]);
+		old=gez;
+		gez=yapi[gez][k*2+1]-'0';
+		cikis[i]=yapi[old][k*2+2];
+		printf("q%d -%c/%c--> q%d\n",old,giris[i],yapi[old][k*2+2],gez);
+	}
+	printf("\nInput:  %s\nOutput: %s",giris,cikis);
+	return 0;
+}
