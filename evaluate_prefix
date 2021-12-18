@@ -1,0 +1,60 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+char sayi[3];    // ' 'bosluga gore polish degerden sayi degerini almak icin kullanilan dizi
+void temizle(){
+	for(int i=0;i<3;i++){
+		sayi[i]=' ';
+	}
+}
+
+int main(){
+	char polish[50]; // kullanicidan alinan polish deger
+	int deger[20];   // hesaplanacak sayilarin tutuldugu dizi
+	
+	int j=0,a,b,k=-1,bolo=0;
+	char c;          // operatoru tutacak char
+	printf("Polish notasyonu: ");
+    scanf("%[^\n]",&polish);
+	temizle();
+	j=3;
+	for(int i=strlen(polish)-1;i>=0;i--){    // tersten baslayarak adim adim islemleri gerceklestirecek
+		if(polish[i]!=' '){
+			if(polish[i]=='+' || polish[i]=='-' || polish[i]=='*' || polish[i]=='/'){
+				bolo=1;
+				a=deger[k];
+				b=deger[--k];
+				c=polish[i];
+				switch(c){
+					case '+':
+						deger[k]=(a+b);
+						break;
+					case '-':
+						deger[k]=(a-b);
+						break;
+					case '*':
+						deger[k]=(a*b);
+						break;
+					case '/':
+						deger[k]=(a/b);
+						break;	
+				}
+			}else{  // 2 basamakli veya daha cok basamakli sayilari almak 
+				bolo=0;
+				sayi[j]=polish[i];
+				j--;
+			}
+		}else{
+			if(bolo!=1){
+			a=atoi(sayi);
+			deger[++k]=a;
+			temizle();
+			j=3;
+			}		
+		}
+	}
+	printf("\n sonuc: %d",deger[0]);
+	
+	return 0;
+}
