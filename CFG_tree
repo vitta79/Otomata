@@ -1,0 +1,228 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+// S-->aa|bX|aXX,X-->ab|b
+
+struct cfg{   // kullanici tarafindan girilen cfg degeri parcalayarak tutan liste
+	char kok;
+	char word[30];
+	cfg *sonraki;
+}cfg_in;
+
+struct yaprak{  // kelime olusturma isleminden sonra word leri tutuan liste
+	char kelime[30];
+	yaprak *sonraki;
+}yapraklar;
+
+cfg *ilkc=NULL, *sonc=NULL, *tmp=NULL;
+yaprak *ilky=NULL, *sony=NULL ,*tmpy=NULL, *ilkt=NULL, *sont=NULL;
+
+void cfg_ekle(cfg *deger){   // girilen cfg yi parcalayarak listeye ekleme
+	if(ilkc==NULL){
+		ilkc=deger;
+		sonc=deger;
+	}else{
+		sonc->sonraki=deger;
+		sonc=sonc->sonraki;
+	}
+}
+
+void temizle(char *dizi){
+	for(int t=0;t<strlen(dizi);t++){
+		dizi[t]=' ';
+	}
+}
+
+bool esitmi(char* dizi1, char* dizi2){
+	for(int e=0;e<strlen(dizi1);e++){
+		if(dizi1[e]!=dizi2[e]){
+			return false;
+		}
+	}
+	return true;
+}
+
+void word_ekle(int i, char root){  // kelime icinde kok olan kismina kok degerini ekleme 
+	cfg *tut,*gecici=NULL;
+	int a,k=0;
+	gecici=ilkc;
+	while(gecici!=NULL){
+		if(gecici->kok==root){
+			tut=(struct cfg*)malloc(sizeof (struct cfg));
+			for(k=0;k<i;k++){  
+				tut->word[k]=tmp->word[k];
+			}
+			a=i;
+			for(k=0;k<strlen(gecici->word);k++){
+				if(gecici->word[k]!=' '){
+					tut->word[a]=gecici->word[k];
+					a++;	
+				}
+			}
+			for(k=i+1;k<strlen(tmp->word);k++){
+				tut->word[a]=tmp->word[k];
+				a++;
+			}
+			tut->word[a]='\0';
+			tut->sonraki=NULL;
+			tut->kok=' ';
+			cfg_ekle(tut);
+		}
+		gecici=gecici->sonraki;
+	}
+}
+
+void tekrar_ekle(yaprak *deger){  // yaprak kelimeleri ekle
+	bool var=false;
+	if(ilkt==NULL){
+		ilkt=deger;
+		sont=deger;
+	}else{
+		tmpy=ilkt;
+		while(tmpy!=NULL){
+			if(strlen(tmpy->kelime)==strlen(deger->kelime)){
+				if(esitmi(tmpy->kelime,deger->kelime)==true){
+					var=true;
+					break;
+				}
+			}
+			tmpy=tmpy->sonraki;
+		}
+		if(var!=true){
+			sont->sonraki=deger;
+		    sont=sont->sonraki;	
+		}
+	}
+}
+
+void yaprak_ekle(yaprak *deger){  // yaprak kelimeleri ekle
+    bool var=false;
+	if(ilky==NULL){
+		ilky=deger;
+		sony=deger;
+	}else{
+		tmpy=ilky;
+		while(tmpy!=NULL){
+			if(strlen(tmpy->kelime)==strlen(deger->kelime)){
+				if(esitmi(tmpy->kelime,deger->kelime)==true){
+					tekrar_ekle(deger);
+					var=true;
+					break;
+				}
+			}
+			tmpy=tmpy->sonraki;
+		}
+		if(var!=true){
+			sony->sonraki=deger;
+			sony=sony->sonraki;
+		}
+		
+	}
+}
+
+
+int main(){
+	cfg *yenic;
+	yaprak *yeniy;
+	char cfg[30];
+	char root[10];
+	char tmpword[30];
+	int i=1,j=0,t=0,y=0;
+	bool al=false, var=false;
+	printf("CFG:");
+	scanf("%s",cfg);
+	root[j]=cfg[0];
+	
+	for(i=1;i<strlen(cfg);i++){  // cfg degerini parcalama ve listeye ekleme
+		if(cfg[i]==','){
+			yenic=(struct cfg*)malloc(sizeof (struct cfg));
+			yenic->kok=root[j];
+			for(y=0;y<=t;y++){
+				yenic->word[y]=tmpword[y];
+			}
+			yenic->sonraki=NULL;
+			cfg_ekle(yenic);
+			yenic=NULL;
+			temizle(tmpword);
+			t=0; 
+			i++; j++;
+			root[j]=cfg[i];
+		}else if(cfg[i]=='|'){
+			yenic=(struct cfg*)malloc(sizeof (struct cfg));
+			yenic->kok=root[j];
+			tmpword[t]=' ';
+			for(y=0;y<=t;y++){
+				yenic->word[y]=tmpword[y];
+			}
+			yenic->sonraki=NULL;
+			cfg_ekle(yenic);
+			yenic=NULL;
+			temizle(tmpword);
+			t=0;
+		}else if(cfg[i]!='-' && cfg[i]!='>'){
+			tmpword[t]=cfg[i];
+			t++;
+		}
+	}
+	if(tmpword!=NULL){
+		yenic=(struct cfg*)malloc(sizeof (struct cfg));
+			yenic->kok=root[j];
+			for(y=0;y<=t;y++){
+				yenic->word[y]=tmpword[y];
+			}
+			yenic->sonraki=NULL;
+			cfg_ekle(yenic);
+			yenic=NULL;
+			temizle(tmpword);
+			t=0;
+	}
+	
+	tmp=ilkc;
+	while(tmp!=NULL){  // kelime turetme kismmi
+		al=false;
+		for(i=0;i<strlen(tmp->word);i++){
+			for(j=0;j<strlen(root);j++){
+				if(tmp->word[i]==root[j]){
+					word_ekle(i,root[j]);
+					al=true;	
+				}
+			}
+		}
+		if(al!=true){  // eger kelime icinde kok yok ise yaprak listesine ekle
+		bool altkok=false;
+			for(int r=1;r<strlen(root);r++){
+				if(tmp->kok==root[r]){
+					altkok=true;
+					break;
+				}
+			}
+			if(altkok!=true){
+				yeniy=(struct yaprak*)malloc(sizeof(struct yaprak));
+				for(i=0;i<strlen(tmp->word);i++){
+					yeniy->kelime[i]=tmp->word[i];
+				}
+				yeniy->kelime[i]='\0';
+				yeniy->sonraki=NULL;
+				yaprak_ekle(yeniy);
+			}
+		}
+		tmp=tmp->sonraki;
+	}
+	
+	printf("CFG: %s\nIcin Uretilen Kelimeler sunlardir:\n",cfg);
+	tmpy=ilky;
+	while(tmpy!=NULL){
+		printf("%s ",tmpy->kelime);
+		tmpy=tmpy->sonraki;
+	}
+	printf("\nTekrarlanan kelimeler sunlardir:\n");
+	tmpy=ilkt;
+	while(tmpy!=NULL){
+		printf("%s ",tmpy->kelime);
+		tmpy=tmpy->sonraki;
+	}
+	
+	
+	return 0;
+}
